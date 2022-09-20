@@ -6,7 +6,7 @@ require('module-alias/register')
 const port = 8888;
 
 //list of modules in src folder, one forder one module
-//e.g. if match /login router, it will go to the login folder and execuate the function
+//e.g. if match /login router, it will go to the login folder and execuate the function!
 app.use('/login', require('./src/login'));
 
 app.listen(port, () => {
