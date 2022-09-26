@@ -8,5 +8,5 @@ module.exports = {
     database: 'cms'
   }),
   secretKey: 'random_secret_3938$6&^',
-  expiresIn: '3600s'
+  expiresIn: '7200s'
 }

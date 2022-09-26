@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const config = require('./config.js')
-
 // rename the root directory using @
 require('module-alias/register')
 const port = 8888;
@@ -10,6 +9,10 @@ const port = 8888;
 const {
   expressjwt
 } = require("express-jwt");
+
+// CORS policy
+app.use( require('cors')());
+
 
 //post body-type json type
 const bodyParser = require("body-parser");
@@ -28,6 +31,7 @@ app.use(
 //list of modules in src folder, one forder one module
 //e.g. if match /login router, it will go to the login folder and execuate the function!
 app.use('/login', require('./src/login'));
+app.use('/menuList', require('./src/menuList'));
 
 
 // global error catcher, for JWT error

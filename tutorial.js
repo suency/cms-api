@@ -9,3 +9,20 @@ if (err) throw err
 console.log('The solution is: ', rows)
 })
 connection.end()*/
+
+
+/*connection.query(`SELECT menu_list FROM  roles where roles.name = '${req.body.role}'`, (err, rows, fields) => {
+  const result = JSON.parse(JSON.stringify(rows));
+  if (result.length == 0) {
+    res.send(handleData.responseJSON(false, {
+      error: "Username or password is wrong!!!"
+    }))
+  } else {
+    res.send(handleData.responseJSON(true, {
+      info: result
+    }))
+  }
+
+})*/
+
+/*'[{"label":"Dashboard","key":"/","icon":"PieChartOutlined"},{"label":"Settings","key":"/setting","icon":"SettingOutlined"},{"label":"People","key":"/people","icon":"UserOutlined","children":[{"label":"Admins","key":"/people/admins","icon":"SolutionOutlined"},{"label":"Roles","key":"/people/roles","icon":"TrademarkCircleOutlined"},{"label":"Users","key":"/people/users","icon":"CommentOutlined"}]},{"label":"Team","key":"/team","icon":"TeamOutlined","children":[{"label":"Team1","key":"/team/team1","icon":"AndroidOutlined"},{"label":"Team2","key":"/team/team2","icon":"AppleOutlined"}]},{"label":"Tools","key":"/tools","icon":"ToolOutlined"}]'*/
