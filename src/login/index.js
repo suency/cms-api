@@ -16,8 +16,9 @@ loginRouter.post('/', (req, res) => {
   //connection.query(`select * from users where username = ${req.body.username} and password=${req.body.password}`
   const connection = config.createConnection();
   //console.log(req.get("Authorization")) get header info by get Method
-  connection.query(`select * from users where username = '${req.body.username}' and password='${req.body.password}'`, (err, rows, fields) => {
+  connection.query(`select router_list,name from roles where id = (select role_id from users where username = '${req.body.username}' and password = '${req.body.password}') `, (err, rows, fields) => {
     const result = JSON.parse(JSON.stringify(rows));
+    //console.log(result)
     if (result.length == 0) {
       res.send(handleData.responseJSON(false, {
         error: "Username or password is wrong!!!"
@@ -29,114 +30,18 @@ loginRouter.post('/', (req, res) => {
       }, config.secretKey, {
         expiresIn: config.expiresIn,
       });
-      res.send(handleData.responseJSON(true, {
-        token: tokenStr,
-        role: result[0].role,
-        menuList: [
-          {
-            label: "Dashboard",
-            key: "/",
-            icon: "PieChartOutlined"
-          }, {
-            label: "Settings",
-            key: "/setting",
-            icon: "SettingOutlined"
-          },
-          {
-            label: "People",
-            key: "/people",
-            icon: "UserOutlined",
-            children: [{
-                label: "Admins",
-                key: "/people/admins",
-                icon: "SolutionOutlined"
-              },
-              {
-                label: "Roles",
-                key: "/people/roles",
-                icon: "TrademarkCircleOutlined"
-              },
-              {
-                label: "Users",
-                key: "/people/users",
-                icon: "CommentOutlined"
-              }
-            ]
-          },
-          {
-            label: "Team",
-            key: "/team",
-            icon: "TeamOutlined",
-            children: [{
-                label: "Team1",
-                key: "/team/team1",
-                icon: "AndroidOutlined"
-              },
-              {
-                label: "Team2",
-                key: "/team/team2",
-                icon: "AppleOutlined"
-              }
-            ]
-          },
-          {
-            label: "Tools",
-            key: "/tools",
-            icon: "ToolOutlined"
-          }
-        ],
-        routerList: [{
-            path: "/",
-            element: "Layout",
-            children: [{
-                path: "/",
-                element: "Home",
-              },
-              {
-                path: "/setting",
-                element: "Setting"
-              },
-              {
-                path: "/tools",
-                element: "Tools"
-              },
-              {
-                path: "/team/team1",
-                element: "Team1"
-              },
-              {
-                path: "/team/team2",
-                element: "Team2"
-              },
-              {
-                path: "/people/admins",
-                element: "Admins"
-              },
-              {
-                path: "/people/roles",
-                element: "Roles"
-              },
-              {
-                path: "/people/users",
-                element: "Users"
-              },
-            ],
-          },
-          {
-            path: "/Login",
-            element: "Login"
-          },
-          {
-            path: "*",
-            element: "NotFound"
-          },
-        ]
-      }));
-    }
-    console.log(JSON.parse(JSON.stringify(rows)))
 
-    //res.send('The solution is: ', rows)
-    //console.log(rows)
+      res.send({
+        info:{
+          //routerList:JSON.parse(result[0].menu_list),
+          routerList:JSON.parse(result[0].router_list),
+          token: tokenStr,
+          role: result[0].name
+        },
+        status: "OK"
+      })
+    }
+    //console.log(JSON.parse(JSON.stringify(rows)))
   })
   connection.end()
 

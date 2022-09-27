@@ -32,6 +32,7 @@ app.use(
 //e.g. if match /login router, it will go to the login folder and execuate the function!
 app.use('/login', require('./src/login'));
 app.use('/menuList', require('./src/menuList'));
+app.use('/roles', require('./src/roles'));
 
 
 // global error catcher, for JWT error

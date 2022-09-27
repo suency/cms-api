@@ -22,7 +22,6 @@ menuList.post('/', (req, res) => {
   }
   connection.query(`SELECT menu_list FROM  roles where roles.name = '${req.body.role}'`, (err, rows, fields) => {
     const result = JSON.parse(JSON.stringify(rows));
-    //console.log(result[0].menu_list)
     if(result.length!==0){
       res.send({
         info:{
