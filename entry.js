@@ -13,6 +13,8 @@ const {
 // CORS policy
 app.use( require('cors')());
 
+//image assets
+app.use('/static', express.static('static/head'))
 
 //post body-type json type
 const bodyParser = require("body-parser");

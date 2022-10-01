@@ -16,7 +16,8 @@ loginRouter.post('/', (req, res) => {
   //connection.query(`select * from users where username = ${req.body.username} and password=${req.body.password}`
   const connection = config.createConnection();
   //console.log(req.get("Authorization")) get header info by get Method
-  connection.query(`select router_list,name from roles where id = (select role_id from users where username = '${req.body.username}' and password = '${req.body.password}') `, (err, rows, fields) => {
+  let sql = `select * from (select users.username,roles.id as role_id,users.id as user_id,roles.router_list,roles.menu_list,users.avatar as user_avatar,roles.name as role_name from roles, users where roles.id = users.role_id) as info where info.user_id = (select id from users where username = '${req.body.username}' and password = '${req.body.password}')`;
+  connection.query(sql, (err, rows, fields) => {
     const result = JSON.parse(JSON.stringify(rows));
     //console.log(result)
     if (result.length == 0) {
@@ -32,11 +33,14 @@ loginRouter.post('/', (req, res) => {
       });
 
       res.send({
-        info:{
-          //routerList:JSON.parse(result[0].menu_list),
-          routerList:JSON.parse(result[0].router_list),
+        info: {
+          id: result[0].user_id,
+          routerList: JSON.parse(result[0].router_list),
+          menuList: JSON.parse(result[0].menu_list),
           token: tokenStr,
-          role: result[0].name
+          role: result[0].role_name,
+          avatar: result[0].user_avatar,
+          username: result[0].username
         },
         status: "OK"
       })
