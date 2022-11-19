@@ -8,6 +8,6 @@ module.exports = {
     database: 'cms',
     port: '13306'
   }),
-  secretKey: 'random_secret_3938$6&^',
-  expiresIn: '7200s'
+  secretKey: 'random_secret_3938$6&^!#',
+  expiresIn: '12220s'
 }

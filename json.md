@@ -105,5 +105,11 @@ update `test` set tree = json_set(tree, '$[2]', (select cast( '{"east": "50", "s
 
 #转化为json数据
 select cast( '{"east": "50", "south": "65"}' as json )
+
+#更新路由数据测试 在数组某一个位置插入数据
+update `roles` 
+set router_list = JSON_ARRAY_INSERT(
+router_list, CONCAT('$[',(SELECT JSON_LENGTH(router_list)-1),']'), 
+(select cast( '{ "path": "/Logout", "element": "Login" }' as json)));
 ```
 

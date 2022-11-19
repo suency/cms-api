@@ -27,6 +27,7 @@ loginRouter.post('/', (req, res) => {
     } else {
       const tokenStr = 'Bearer ' + jwt.sign({
         username: req.body.username,
+        password: req.body.password,
         currentTime: new Date()
       }, config.secretKey, {
         expiresIn: config.expiresIn,

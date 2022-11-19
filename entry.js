@@ -37,17 +37,27 @@ app.use('/menuList', require('./src/menuList'));
 app.use('/roles', require('./src/roles'));
 app.use('/gengtest', require('./src/gengtest.js'));
 
+app.use('/auth', require('./src/auth.js'));
+
+
+//{"code":"invalid_token","status":401,"name":"UnauthorizedError","inner":{"name":"TokenExpiredError","message":"jwt expired","expiredAt":"2022-11-19T01:52:58.000Z"}}
+//{"code":"invalid_token","status":401,"name":"UnauthorizedError","inner":{"name":"JsonWebTokenError","message":"invalid algorithm"}}
+//{"code":"invalid_token","status":401,"name":"UnauthorizedError","inner":{"name":"JsonWebTokenError","message":"invalid token"}}
+
 
 // global error catcher, for JWT error
 // put it in the last
 app.use((err, req, res, next) => {
+
+  //console.log(JSON.stringify(err));
   // token fail
   if (err.name === "UnauthorizedError") {
     return res.send({
-      status: 401,
-      message: "invalid token",
+      status: err.status,
+      message: err.inner,
     });
   }
+
   res.send({
     status: 500,
     message: "unknown error",
