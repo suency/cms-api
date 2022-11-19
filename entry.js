@@ -11,7 +11,7 @@ const {
 } = require("express-jwt");
 
 // CORS policy
-app.use( require('cors')());
+app.use(require('cors')());
 
 //image assets
 app.use('/static', express.static('static/head'))
@@ -26,7 +26,7 @@ app.use(
     secret: config.secretKey,
     algorithms: ["HS256"]
   }).unless({
-    path: ["/login", "/login/register"] // no need to auth route
+    path: ["/login", "/login/register", "/gengtest"] // no need to auth route
   })
 );
 
@@ -35,6 +35,7 @@ app.use(
 app.use('/login', require('./src/login'));
 app.use('/menuList', require('./src/menuList'));
 app.use('/roles', require('./src/roles'));
+app.use('/gengtest', require('./src/gengtest.js'));
 
 
 // global error catcher, for JWT error

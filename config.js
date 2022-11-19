@@ -4,8 +4,9 @@ module.exports = {
   createConnection: () => mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'root',
-    database: 'cms'
+    password: '123456789',
+    database: 'cms',
+    port: '13306'
   }),
   secretKey: 'random_secret_3938$6&^',
   expiresIn: '7200s'
