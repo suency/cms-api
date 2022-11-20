@@ -26,7 +26,7 @@ app.use(
     secret: config.secretKey,
     algorithms: ["HS256"]
   }).unless({
-    path: ["/login", "/login/register", "/gengtest"] // no need to auth route
+    path: ["/login", "/login/register", "/gengtest", /\/app1\/.*/] // no need to auth route
   })
 );
 
@@ -39,6 +39,9 @@ app.use('/gengtest', require('./src/gengtest.js'));
 
 app.use('/auth', require('./src/auth.js'));
 
+//mutiple app backend inteface
+app.use('/app1', require('./src/apps/app1'));
+
 
 //{"code":"invalid_token","status":401,"name":"UnauthorizedError","inner":{"name":"TokenExpiredError","message":"jwt expired","expiredAt":"2022-11-19T01:52:58.000Z"}}
 //{"code":"invalid_token","status":401,"name":"UnauthorizedError","inner":{"name":"JsonWebTokenError","message":"invalid algorithm"}}
@@ -48,8 +51,6 @@ app.use('/auth', require('./src/auth.js'));
 // global error catcher, for JWT error
 // put it in the last
 app.use((err, req, res, next) => {
-
-  //console.log(JSON.stringify(err));
   // token fail
   if (err.name === "UnauthorizedError") {
     return res.send({

@@ -154,6 +154,47 @@ roles.post('/deleteRole', (req, res) => {
 })
 
 
+roles.post('/addrootmenu', (req, res) => {
+
+  const connection = config.createConnection({ multipleStatements: true });
+  let mutipleQuery = `select tree from test where id = 3;select tree from test where id = 1;`;
+  //let mutipleQuery = `SELECT 1; SELECT 2`;
+  connection.query(mutipleQuery, (err, rows, fields) => {
+
+    console.log(rows)
+    const result1 = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[0][0].tree)
+    const result2 = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[1][0].tree)
+
+    console.log(result1)
+
+    if (rows) {
+      res.send({
+        info1: result1,
+        info2: result2
+      })
+    } else {
+      res.send(handleData.responseJSON(false, {
+        error: "system error role deleting"
+      }))
+    }
+
+    /* const result = Object.values(JSON.parse(JSON.stringify(rows)))[0].tree
+    const result2 = JSON.parse(result)
+    console.log(result2)
+    if (rows) {
+      res.send({
+        info: result2
+      })
+    } else {
+      res.send(handleData.responseJSON(false, {
+        error: "system error role deleting"
+      }))
+    } */
+
+  })
+  connection.end()
+});
+
 roles.post('/test', (req, res) => {
 
   res.send({
