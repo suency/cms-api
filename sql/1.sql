@@ -116,8 +116,70 @@
 
 ## 删除
 #第一种，删除根目录（没有子菜单的），直接删除菜单和路由
+#update `roles` set menu_list =json_remove(menu_list, CONCAT('$[',(SELECT JSON_LENGTH(menu_list)-1),']')) where id = '1' OR id = '4';
+
+#select menu_list from roles
+#start transaction;
+#rollback;
+
+#SELECT JSON_SEARCH((select menu_list from roles limit 0,1),'one','Setting');
+#SELECT SUBSTRING_INDEX(JSON_SEARCH((select menu_list from roles limit 0,1),'one','Setting'),".",100);
+
+#SET @a = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles limit 0,1),'one','Setting'),'\.([^\.]*)$','"'));
+#select @a;
+#select router_list from roles limit 0,1;
+
+##SET @menu = (SELECT regexp_replace(JSON_SEARCH((select menu_list from roles limit 0,1),'one','Paper'),'\.([^\.]*)$','"')); #menu
+#update `roles` set menu_list =json_remove(menu_list, @menu) where id IN (SELECT id FROM (SELECT id FROM roles LIMIT 0,1) aa);
+
+#SET @router = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles limit 0,1),'one','Paper'),'\.([^\.]*)$','"')); #router
+
+#select @router;
+#SELECT regexp_replace(JSON_SEARCH((select router_list from roles limit 0,1),'one','Paper'),'\.([^\.]*)$','"');
+#update `roles` set router_list =json_remove(router_list, @router) where id IN (SELECT id FROM (SELECT id FROM roles LIMIT 0,1) bb);
 
 #第二种，如果有子菜单，有多个（大于一个），直接删除子路由和菜单
 
 #第三种，如果有子菜单并且只有一个，不能删除，要删除，根菜单也得删除
+
+#SELECT COUNT(*) from roles;
+#update roles set menu_list = JSON_ARRAY_INSERT(menu_list, CONCAT('$[',(SELECT JSON_LENGTH(menu_list)),']'), (select cast( '{ "key": "/finance", "icon": "ChromeFilled", "label": "Finance" }' as json))) where id = '1' OR id = '4'
+
+
+## delete root menu and router
+drop procedure if exists p;
+CREATE PROCEDURE p(labelname varchar(255))
+BEGIN
+DECLARE counter INT DEFAULT (SELECT COUNT(*) from roles);
+DECLARE incre INT DEFAULT 0;
+DECLARE myid INT DEFAULT 0;
+DECLARE myrouter VARCHAR(40);
+DECLARE mymenu VARCHAR(40);
+
+label: LOOP
+	IF incre > counter THEN
+		LEAVE label; 
+	END IF; 
+
+	SET myrouter = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles ORDER BY id ASC LIMIT incre,1),'one',labelname),'\.([^\.]*)$','"')); 
+	SET mymenu = (SELECT regexp_replace(JSON_SEARCH((select menu_list from roles ORDER BY id ASC LIMIT incre,1),'one',labelname),'\.([^\.]*)$','"')); 
+
+	IF (!(mymenu <=> null) and !(myrouter <=> null)) THEN
+		SELECT mymenu;
+		SELECT incre;
+		
+		SET myid = (SELECT id FROM (SELECT id FROM roles ORDER BY id ASC LIMIT incre,1 ) aa);
+		update roles set router_list =json_remove(router_list, JSON_UNQUOTE(myrouter)) where id = myid;
+		update roles set menu_list =json_remove(menu_list, JSON_UNQUOTE(mymenu)) where id = myid;
+
+	END IF; 
+	SET incre = incre + 1;
+END LOOP label;
+END;
+
+
+call p('diao');
+
+
+
 

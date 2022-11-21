@@ -157,24 +157,33 @@ roles.post('/deleteRole', (req, res) => {
 roles.post('/addrootmenu', (req, res) => {
 
   const connection = config.createConnection({ multipleStatements: true });
-  let mutipleQuery = `select tree from test where id = 3;select tree from test where id = 1;`;
-  //let mutipleQuery = `SELECT 1; SELECT 2`;
+  console.log(req.body);
+  // first case,root menu and root router
+  // data sample { "key": "/app1", "icon": "SolutionOutlined", "label": "App1" }
+  //let moackData = { menuIcon: "ChromeFilled", menuName: "finance", parentMenu: "/" }
+  let moackData = req.body
+
+  let insert_root_menu_query = `update roles set menu_list = JSON_ARRAY_INSERT(menu_list, CONCAT('$[',(SELECT JSON_LENGTH(menu_list)),']'), (select cast( '{ "key": "/${moackData.menuName}", "icon": "${moackData.menuIcon}", "label": "${handleData.capital(moackData.menuName)}" }' as json))) where id = '1' OR id = '4'`;
+
+
+  //data sample { "path": "/app1", "element": "App1" }
+  let insert_root_router_query = `update roles set router_list = JSON_ARRAY_INSERT(router_list, CONCAT('$[0].children[',(SELECT JSON_LENGTH(router_list->'$[0].children')),']'),(select cast( '{ "path": "/${moackData.menuName}", "element": "${handleData.capital(moackData.menuName)}" }' as json))) where id = '1' OR id = '4'`;
+
+  let mutipleQuery = insert_root_menu_query + ";" + insert_root_router_query + ";";
+  //mutipleQuery = mutipleQuery.replace(/\r|\n/ig, "");
+
+  //let mutipleQuery = "select 1";
   connection.query(mutipleQuery, (err, rows, fields) => {
-
-    console.log(rows)
-    const result1 = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[0][0].tree)
-    const result2 = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[1][0].tree)
-
-    console.log(result1)
-
+    // const result1 = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[0][0].tree)
+    // const result2 = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[1][0].tree)
     if (rows) {
       res.send({
-        info1: result1,
-        info2: result2
+        status: "OK",
+        message: "add successfully!"
       })
     } else {
       res.send(handleData.responseJSON(false, {
-        error: "system error role deleting"
+        error: "system error in adding root menu"
       }))
     }
 
@@ -195,10 +204,19 @@ roles.post('/addrootmenu', (req, res) => {
   connection.end()
 });
 
+roles.post('/deleterootmenu', (req, res) => {
+  const connection = config.createConnection({ multipleStatements: true });
+  res.send({
+    "a": "b1"
+  })
+  connection.end()
+});
+
+// test express mysql
 roles.post('/test', (req, res) => {
 
   res.send({
-    "a": "b"
+    "a": "b1"
   })
 });
 
