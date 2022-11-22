@@ -232,6 +232,63 @@ roles.post("/addrootmenu", (req, res) => {
   connection.end();
 });
 
+roles.post("/deletewholerootsubmenu", (req, res) => {
+  //let moackData = req.body;
+  let superSql = `
+  drop procedure if exists p1;
+CREATE PROCEDURE p1(parent varchar(255),child varchar(255))
+BEGIN
+DECLARE counter INT DEFAULT (SELECT COUNT(*) from roles);
+DECLARE incre INT DEFAULT 0;
+DECLARE myid INT DEFAULT 0;
+DECLARE myrouter VARCHAR(40);
+DECLARE mymenu VARCHAR(40);
+
+label: LOOP
+	IF incre > counter THEN
+		LEAVE label; 
+	END IF; 
+
+	SET myrouter = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles ORDER BY id ASC LIMIT incre,1),'one',child),'\.([^\.]*)$','"')); 
+	SET mymenu = (SELECT regexp_replace(JSON_SEARCH((select menu_list from roles ORDER BY id ASC LIMIT incre,1),'one',parent),'\.([^\.]*)$','"')); 
+
+	IF (!(mymenu <=> null) and !(myrouter <=> null)) THEN
+		#SELECT mymenu;
+		#SELECT incre;
+		
+		SET myid = (SELECT id FROM (SELECT id FROM roles ORDER BY id ASC LIMIT incre,1 ) aa);
+		update roles set router_list =json_remove(router_list, JSON_UNQUOTE(myrouter)) where id = myid;
+		update roles set menu_list =json_remove(menu_list, JSON_UNQUOTE(mymenu)) where id = myid;
+
+	END IF; 
+	SET incre = incre + 1;
+END LOOP label;
+	SELECT "OK";
+END;
+
+call p1('${handleData.capital(req.body.parentLabel)}','${handleData.capital(req.body.childLabel)}');
+  `;
+  const connection = config.createConnection({ multipleStatements: true });
+  connection.query(superSql, (err, rows, fields) => {
+    console.log(req.body)
+    if (err === null) {
+      res.send({
+        status: "OK",
+        message: "delete successfully!",
+      });
+    } else {
+      console.log(err);
+      res.send(
+        handleData.responseJSON(false, {
+          error: "system error in delete root menu",
+        })
+      );
+    }
+  });
+
+  connection.end();
+});
+
 roles.post("/deleterootmenu", (req, res) => {
   //let moackData = req.body;
   let superSql = `
@@ -322,6 +379,41 @@ router_list, CONCAT('$[0].children[',(SELECT JSON_LENGTH(router_list->'$[0].chil
       res.send(
         handleData.responseJSON(false, {
           error: "system error in delete submenu",
+        })
+      );
+    }
+  })
+});
+
+roles.post("/addrootsubmenu", (req, res) => {
+  let moackData = req.body;
+
+  let superSql =
+    `
+    update roles
+    set menu_list = JSON_ARRAY_INSERT(
+    menu_list, CONCAT('$[',(SELECT JSON_LENGTH(menu_list)),']'), 
+    (select cast( '{ "key": "/${moackData.rootMenuName.toLowerCase()}", "icon": "${moackData.rootMenuIcon}", "label": "${handleData.capital(moackData.rootMenuName)}","children":[{"key": "/${moackData.rootMenuName.toLowerCase()}/${moackData.subMenuName.toLowerCase()}", "icon": "${moackData.subMenuIcon}", "label": "${handleData.capital(moackData.subMenuName)}"}	] }' as json))) where id = '1' OR id = '4';
+    
+    update roles 
+    set router_list = JSON_ARRAY_INSERT(
+    router_list, CONCAT('$[0].children[',(SELECT JSON_LENGTH(router_list->'$[0].children')),']'), 
+    (select cast( '{ "path": "/${moackData.rootMenuName.toLowerCase()}/${moackData.subMenuName.toLowerCase()}", "element": "${handleData.capital(moackData.subMenuName)}" }' as json))) where id = '1' OR id = '4'
+  `;
+  //console.log(moackData);
+  //console.log(superSql);
+  const connection = config.createConnection({ multipleStatements: true });
+  connection.query(superSql, (err, rows, fields) => {
+    if (err === null) {
+      res.send({
+        status: "OK",
+        message: "add root sub menu successfully!",
+      });
+    } else {
+      console.log(err);
+      res.send(
+        handleData.responseJSON(false, {
+          error: "system error in delete root sub menu",
         })
       );
     }
