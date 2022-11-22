@@ -165,8 +165,8 @@ label: LOOP
 	SET mymenu = (SELECT regexp_replace(JSON_SEARCH((select menu_list from roles ORDER BY id ASC LIMIT incre,1),'one',labelname),'\.([^\.]*)$','"')); 
 
 	IF (!(mymenu <=> null) and !(myrouter <=> null)) THEN
-		SELECT mymenu;
-		SELECT incre;
+		#SELECT mymenu;
+		#SELECT incre;
 		
 		SET myid = (SELECT id FROM (SELECT id FROM roles ORDER BY id ASC LIMIT incre,1 ) aa);
 		update roles set router_list =json_remove(router_list, JSON_UNQUOTE(myrouter)) where id = myid;
@@ -175,10 +175,10 @@ label: LOOP
 	END IF; 
 	SET incre = incre + 1;
 END LOOP label;
+	SELECT "OK";
 END;
 
-
-call p('diao');
+call p('niub1');
 
 
 
