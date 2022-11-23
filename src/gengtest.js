@@ -8,6 +8,20 @@ testRouter.use((req, res, next) => {
     next();
 });
 
+//just for tesing menu and router
+testRouter.get('/json', (req, res) => {
+    const connection = config.createConnection();
+    let sql = "select * from roles where id = 1";
+    connection.query(sql, (err, rows, fields) => {
+        let result = rows;
+        //JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[0][0].tree)
+        result[0].menu_list = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[0].menu_list)
+        result[0].router_list = JSON.parse(Object.values(JSON.parse(JSON.stringify(rows)))[0].router_list)
+        res.send(result)
+    });
+    connection.end();
+});
+
 testRouter.get('/', (req, res) => {
     const connection = config.createConnection();
     console.log(66666);

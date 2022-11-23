@@ -234,43 +234,56 @@ roles.post("/addrootmenu", (req, res) => {
 
 roles.post("/deletewholerootsubmenu", (req, res) => {
   //let moackData = req.body;
+  let chidlrenlables = req.body.children.map(item => handleData.capital(item))
+  chidlrenlables = JSON.stringify(chidlrenlables)
+  //console.log(chidlrenlables)
   let superSql = `
   drop procedure if exists p1;
-CREATE PROCEDURE p1(parent varchar(255),child varchar(255))
+CREATE PROCEDURE p1(parent varchar(255),children JSON)
 BEGIN
 DECLARE counter INT DEFAULT (SELECT COUNT(*) from roles);
 DECLARE incre INT DEFAULT 0;
 DECLARE myid INT DEFAULT 0;
 DECLARE myrouter VARCHAR(40);
 DECLARE mymenu VARCHAR(40);
-
+DECLARE childcount INT DEFAULT 0;
+DECLARE mychild VARCHAR(40);
 label: LOOP
-	IF incre > counter THEN
+	IF incre >= counter THEN
 		LEAVE label; 
 	END IF; 
+	
+	SET childcount = 0;
+	SET myid = (SELECT id FROM (SELECT id FROM roles ORDER BY id ASC LIMIT incre,1 ) aa);
+	REPEAT
+		SET mychild = JSON_EXTRACT(children, CONCAT("$[",childcount,"]"));
+		SET myrouter = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles ORDER BY id ASC LIMIT incre,1),'one',JSON_UNQUOTE(mychild)),'\.([^\.]*)$','"')); 
+		SET childcount = childcount + 1;
+		
+		IF (!(myrouter <=> null)) THEN
+			update roles set router_list =json_remove(router_list, JSON_UNQUOTE(myrouter)) where id = myid;
+		END IF; 
+	UNTIL childcount = JSON_LENGTH(children) END REPEAT;
 
-	SET myrouter = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles ORDER BY id ASC LIMIT incre,1),'one',child),'\.([^\.]*)$','"')); 
 	SET mymenu = (SELECT regexp_replace(JSON_SEARCH((select menu_list from roles ORDER BY id ASC LIMIT incre,1),'one',parent),'\.([^\.]*)$','"')); 
 
-	IF (!(mymenu <=> null) and !(myrouter <=> null)) THEN
-		#SELECT mymenu;
-		#SELECT incre;
+	IF (!(mymenu <=> null)) THEN
 		
-		SET myid = (SELECT id FROM (SELECT id FROM roles ORDER BY id ASC LIMIT incre,1 ) aa);
-		update roles set router_list =json_remove(router_list, JSON_UNQUOTE(myrouter)) where id = myid;
 		update roles set menu_list =json_remove(menu_list, JSON_UNQUOTE(mymenu)) where id = myid;
 
 	END IF; 
+	
 	SET incre = incre + 1;
 END LOOP label;
 	SELECT "OK";
 END;
 
-call p1('${handleData.capital(req.body.parentLabel)}','${handleData.capital(req.body.childLabel)}');
+call p1('${handleData.capital(req.body.parentLabel)}','${chidlrenlables}');
   `;
+
   const connection = config.createConnection({ multipleStatements: true });
   connection.query(superSql, (err, rows, fields) => {
-    console.log(req.body)
+    //console.log(err)
     if (err === null) {
       res.send({
         status: "OK",
@@ -418,6 +431,64 @@ roles.post("/addrootsubmenu", (req, res) => {
       );
     }
   })
+});
+
+roles.post("/editrootmenu", (req, res) => {
+  //let moackData = req.body;
+  //console.log(req.body)
+  let superSql = `
+  drop procedure if exists p;
+CREATE PROCEDURE p(labelname varchar(255),menu_re JSON,router_re JSON)
+BEGIN
+DECLARE counter INT DEFAULT (SELECT COUNT(*) from roles);
+DECLARE incre INT DEFAULT 0;
+DECLARE myid INT DEFAULT 0;
+DECLARE myrouter VARCHAR(40);
+DECLARE mymenu VARCHAR(40);
+
+label: LOOP
+	IF incre >= counter THEN
+		LEAVE label; 
+	END IF; 
+
+	SET myrouter = (SELECT regexp_replace(JSON_SEARCH((select router_list from roles ORDER BY id ASC LIMIT incre,1),'one',labelname),'\.([^\.]*)$','"')); 
+	SET mymenu = (SELECT regexp_replace(JSON_SEARCH((select menu_list from roles ORDER BY id ASC LIMIT incre,1),'one',labelname),'\.([^\.]*)$','"')); 
+	SELECT mymenu;
+	IF (!(mymenu <=> null) and !(myrouter <=> null)) THEN
+		
+		#SELECT incre;
+		
+		SET myid = (SELECT id FROM (SELECT id FROM roles ORDER BY id ASC LIMIT incre,1 ) aa);
+		update roles set router_list =json_replace(router_list, JSON_UNQUOTE(myrouter),router_re) where id = myid;
+		update roles set menu_list =json_replace(menu_list, JSON_UNQUOTE(mymenu),menu_re) where id = myid;
+
+	END IF; 
+	SET incre = incre + 1;
+END LOOP label;
+	#SELECT "OK";
+END;
+
+call p('${handleData.capital(req.body.label)}','${req.body.menu}','${req.body.router}');
+  `;
+  const connection = config.createConnection({ multipleStatements: true });
+  connection.query(superSql, (err, rows, fields) => {
+    console.log(err)
+    if (err === null) {
+      res.send({
+        status: "OK",
+        message: "edit successfully!",
+      });
+    } else {
+      console.log(err);
+      res.send(
+        handleData.responseJSON(false, {
+          error: "system error in edit root menu",
+        })
+      );
+    }
+  });
+
+  connection.end();
 });
 // test express mysql
 roles.post("/test", (req, res) => {

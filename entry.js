@@ -13,6 +13,10 @@ const {
 // CORS policy
 app.use(require('cors')());
 
+/* app.get('*', function (request, response) {
+  response.sendFile(path.resolve(__dirname, 'public', 'index.html'))
+}) */
+
 //image assets
 app.use('/static', express.static('static/head'))
 
@@ -26,7 +30,7 @@ app.use(
     secret: config.secretKey,
     algorithms: ["HS256"]
   }).unless({
-    path: ["/login", "/login/register", "/gengtest", /\/app1\/.*/] // no need to auth route
+    path: ["/login", "/login/register", /\/gengtest.*/, /\/app1\/.*/] // no need to auth route
   })
 );
 
