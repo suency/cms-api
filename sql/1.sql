@@ -178,7 +178,7 @@ END LOOP label;
 	SELECT "OK";
 END;
 
-call p('niub1');
+#call p('pol');
 
 
 
