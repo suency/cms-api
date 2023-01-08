@@ -45,10 +45,10 @@ To clone and run this application, you'll need [Git](https://git-scm.com) and [N
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/suency/cms-react.git
+$ git clone https://github.com/suency/cms-api.git
 
 # Go into the repository
-$ cd cms-react
+$ cd cms-api
 
 # Install dependencies
 $ npm install
